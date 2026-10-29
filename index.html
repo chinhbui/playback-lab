@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090e18">
+  <meta name="description" content="Playback Lab — test HLS và MPEG-DASH bằng hls.js hoặc Shaka Player.">
+  <title>Stream Library · Playback Lab</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/shaka-player@5/dist/shaka-player.compiled.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="./" aria-label="Playback Lab — Stream Library">
+        <span class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span><strong>PLAYBACK<span class="brand-dot">.</span>LAB</strong><small>STREAM TESTING WORKSPACE</small></span>
+      </a>
+      <div class="header-right"><span class="header-indicator"><i></i> Browser lab</span><a class="source-link" href="https://github.com/chinhbui/playback-lab" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-rule"></span> MULTI-STREAM PLAYGROUND <span class="hero-version">/ 01</span></div>
+        <h1 id="page-title">Stream <em>Library<span class="period">.</span></em></h1>
+        <p>Khám phá luồng HLS và MPEG-DASH. Chọn <strong>hls.js</strong> hoặc <strong>Shaka Player</strong> ngay trên từng item, thử phát và theo dõi chẩn đoán tại một nơi.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" id="add-stream-top" type="button"><span aria-hidden="true">＋</span> Thêm luồng của bạn</button>
+          <a class="text-link" href="#catalog">Khám phá catalog <span aria-hidden="true">↘</span></a>
+        </div>
+      </div>
+      <div class="hero-graphic" aria-hidden="true">
+        <div class="visual-orbit orbit-outer"></div><div class="visual-orbit orbit-inner"></div>
+        <div class="visual-center"><span>▶</span><small>HLS / DASH</small></div>
+        <div class="visual-chip chip-top">MANIFEST <b>200</b></div>
+        <div class="visual-chip chip-bottom"><span class="signal-line"></span> ADAPTIVE BITRATE</div>
+        <div class="visual-annotation">STREAM PIPELINE<br>READY TO INSPECT</div>
+      </div>
+    </section>
+
+    <section class="summary-strip" aria-label="Thông tin phòng lab">
+      <div class="summary-item"><span class="summary-icon">▤</span><div><strong id="total-count">—</strong><small>Luồng trong catalog</small></div></div>
+      <div class="summary-item"><span class="summary-icon">⌘</span><div><strong>02</strong><small>Playback engines</small></div></div>
+      <div class="summary-item"><span class="summary-icon">◈</span><div><strong>HLS + DASH</strong><small>Adaptive streaming</small></div></div>
+      <div class="summary-item summary-note"><span class="pulse-dot"></span><span>Kiểm tra tương thích tại trình duyệt của bạn</span></div>
+    </section>
+
+    <section class="workspace" id="catalog" aria-label="Stream catalog và trình phát">
+      <div class="catalog-column">
+        <div class="section-heading">
+          <div><span class="section-index">01 / BROWSE</span><h2>Stream catalog <span class="muted-count" id="visible-count"></span></h2><p>Chọn thư viện phát tương ứng với từng manifest.</p></div>
+          <button class="secondary-btn" id="add-stream" type="button"><span aria-hidden="true">＋</span> Add stream</button>
+        </div>
+        <div class="filters">
+          <label class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg><input id="search-input" type="search" placeholder="Tìm tên, URL hoặc tag..." autocomplete="off" aria-label="Tìm luồng"></label>
+          <select id="format-filter" aria-label="Lọc theo định dạng"><option value="all">All formats</option><option value="hls">HLS</option><option value="dash">DASH</option></select>
+          <select id="mode-filter" aria-label="Lọc theo loại nội dung"><option value="all">All types</option><option value="live">LIVE</option><option value="vod">VOD</option></select>
+        </div>
+        <div class="catalog-hint"><span class="hint-swatch"></span> Nút sáng = có thể thử theo định dạng &amp; API browser; không bảo đảm codec, CORS, DRM hoặc nguồn đang hoạt động.</div>
+        <div class="stream-list" id="stream-list" aria-live="polite"></div>
+        <div class="empty-state" id="empty-state" hidden><span>⌕</span><strong>Không tìm thấy luồng</strong><p>Hãy thử bộ lọc khác hoặc thêm URL của bạn.</p></div>
+      </div>
+
+      <aside class="inspector" aria-label="Trình phát và diagnostics">
+        <div class="inspector-heading"><div><span class="section-index">02 / INSPECT</span><h2>Player console</h2></div><span class="console-index">LAB / 001</span></div>
+        <div class="player-card">
+          <div class="player-topline"><span><span class="live-led"></span> LIVE PREVIEW</span><span id="engine-indicator">NO ENGINE</span></div>
+          <div class="video-stage">
+            <video id="video" playsinline controls preload="none" crossorigin="anonymous" aria-label="Trình phát video"></video>
+            <div class="video-placeholder" id="video-placeholder"><div class="placeholder-symbol">▶</div><strong>Ready when you are.</strong><span>Chọn hls.js hoặc Shaka từ catalog<br>để bắt đầu phát luồng.</span></div>
+          </div>
+          <div class="now-playing">
+            <div class="now-title-row"><span class="small-label">NOW PLAYING</span><span class="status-text" id="player-status">IDLE</span></div>
+            <h3 id="current-title">Chưa chọn luồng</h3>
+            <a id="current-url" href="#" target="_blank" rel="noopener noreferrer" class="current-url" hidden></a>
+            <p id="current-description">Thư viện đã sẵn sàng. Chọn một player để kiểm tra.</p>
+            <div class="now-tags" id="now-tags"><span class="tag tag-neutral">—</span></div>
+          </div>
+          <div class="metrics">
+            <div><span>PLAYHEAD</span><strong id="metric-time">--:--</strong></div>
+            <div><span>BUFFER AHEAD</span><strong id="metric-buffer">—</strong></div>
+            <div><span>RESOLUTION</span><strong id="metric-resolution">—</strong></div>
+          </div>
+          <div class="log-section">
+            <div class="log-title"><strong>Event log</strong><button id="clear-log" type="button">Clear</button></div>
+            <ol id="event-log" aria-live="polite"><li class="event-muted"><span>--:--:--</span> Chưa có sự kiện.</li></ol>
+          </div>
+        </div>
+        <div class="inspector-help"><span>ⓘ</span><p>Trang này chạy hoàn toàn ở client. Các URL bên ngoài phải cho phép CORS; stream DRM cần tích hợp license server riêng.</p></div>
+      </aside>
+    </section>
+    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments.</span></footer>
+  </main>
+
+  <dialog id="stream-dialog" aria-labelledby="dialog-title">
+    <form id="stream-form" class="stream-form">
+      <div class="dialog-header"><div><span class="section-index">CUSTOM SOURCE</span><h2 id="dialog-title">Thêm stream mới</h2></div><button type="button" class="icon-close" id="close-dialog" aria-label="Đóng">×</button></div>
+      <p>Dùng URL manifest HTTPS công khai, hoặc endpoint bạn có quyền truy cập. Luồng tự thêm được lưu cục bộ trong browser.</p>
+      <label>Tên luồng <input name="title" maxlength="100" placeholder="Ví dụ: LL-HLS live test" required></label>
+      <label>Manifest URL <input name="url" type="url" placeholder="https://example.com/master.m3u8" required></label>
+      <div class="form-pair"><label>Định dạng <select name="format" required><option value="auto">Tự nhận diện URL</option><option value="hls">HLS (.m3u8)</option><option value="dash">DASH (.mpd)</option></select></label><label>Loại nội dung <select name="kind"><option value="vod">VOD</option><option value="live">LIVE</option></select></label></div>
+      <div class="form-error" id="form-error" role="alert" hidden></div>
+      <div class="dialog-actions"><button type="button" class="secondary-btn" id="cancel-dialog">Hủy</button><button type="submit" class="primary-btn">Thêm vào catalog</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
