@@ -172,7 +172,7 @@
       tags.append(
         badge(s.format.toUpperCase(), s.format === "hls" ? "tag-format-hls" : "tag-format-dash"),
         badge(s.kind.toUpperCase(), s.kind === "live" ? "tag-live" : "tag-neutral"),
-        badge(s.custom ? "CUSTOM" : "CLEAR"),
+        badge(s.drm && s.drm !== "clear" ? "DRM" : (s.custom ? "CUSTOM" : "CLEAR")),
         badge(s.codec || "CODEC ?")
       );
       const actions = node("div", "card-actions");
@@ -417,6 +417,7 @@
     const rawUrl = String(data.get("url") || "").trim();
     const selectedFormat = String(data.get("format") || "auto");
     const kind = String(data.get("kind") || "vod");
+    const drm = String(data.get("drm") || "clear");
     const errorElement = byId("form-error");
     errorElement.hidden = true;
     try {
@@ -429,12 +430,13 @@
         throw new Error("Không xác định được định dạng. Chọn HLS hoặc DASH thủ công.");
       }
       if (!title) throw new Error("Vui lòng nhập tên luồng.");
+      if (!["clear", "license-required"].includes(drm)) throw new Error("DRM không hợp lệ.");
       if (customStreams.length >= 100) throw new Error("Tối đa 100 luồng tùy chỉnh.");
       const id = "custom-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
       customStreams.unshift({
         id, title, url: parsedUrl.toString(), format, kind,
         source: "Custom stream", description: "User-defined " + format.toUpperCase() + " manifest",
-        codec: "Unknown", drm: "clear", custom: true
+        codec: "Unknown", drm, custom: true
       });
       saveCustomStreams();
       form.reset();
