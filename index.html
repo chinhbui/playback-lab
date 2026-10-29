@@ -104,6 +104,7 @@
       <label>Tên luồng <input name="title" maxlength="100" placeholder="Ví dụ: LL-HLS live test" required></label>
       <label>Manifest URL <input name="url" type="url" placeholder="https://example.com/master.m3u8" required></label>
       <div class="form-pair"><label>Định dạng <select name="format" required><option value="auto">Tự nhận diện URL</option><option value="hls">HLS (.m3u8)</option><option value="dash">DASH (.mpd)</option></select></label><label>Loại nội dung <select name="kind"><option value="vod">VOD</option><option value="live">LIVE</option></select></label></div>
+      <label>DRM <select name="drm"><option value="clear">Clear / không mã hóa DRM</option><option value="license-required">Encrypted / cần license server</option></select></label>
       <div class="form-error" id="form-error" role="alert" hidden></div>
       <div class="dialog-actions"><button type="button" class="secondary-btn" id="cancel-dialog">Hủy</button><button type="submit" class="primary-btn">Thêm vào catalog</button></div>
     </form>
