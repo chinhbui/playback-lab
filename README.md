@@ -13,7 +13,26 @@ Open `index.html` through a local HTTP server or publish this repository as a Gi
 - Playback console with current playhead, approximate buffered seconds ahead, video resolution, and recent events/errors.
 - Custom HTTPS manifest URLs persisted locally in the browser with `localStorage`.
 
-The bundled test streams are third-party clear-content samples. Their uptime, CORS configuration, and content may change without notice.
+The catalog includes public third-party clear-content samples and one DRM-protected fixture (disabled without license-server configuration). URL availability, CORS, and codec support can change.
+
+### External streams from m3u8-player.net (2026-10-29)
+
+Eight unique HTTPS manifests from the [4K / ABR / live test list](https://m3u8-player.net/tools/4k-m3u8-test-links/) and [HLS debugging guide](https://m3u8-player.net/blog/comprehensive-m3u8-test-links-and-hls-debugging-guide//) were added:
+
+| Stream | Type | Scenario |
+| --- | --- | --- |
+| Tears of Steel (ISM) | HLS VOD | Adaptive HLS |
+| Apple BipBop HEVC | HLS VOD | HEVC codec compatibility |
+| Sintel ABR | HLS VOD | Bitrate adaptation |
+| NASA TV | HLS Live | Live / playlist reload |
+| Bloomberg TV | HLS Live | Live / regional availability |
+| Akamai Eight | HLS Live | Additional live feed |
+| Tears of Steel MP4 packaging | HLS VOD | Alternate packaging |
+| Angel One Widevine | DASH DRM | License-protected fixture (play disabled) |
+
+Already present and skipped: Mux Big Buck Bunny and Akamai CPH Live. Excluded: HTTP-only Dolby Armstrong stream (would be blocked as mixed content on HTTPS Pages).
+
+**Validation limit:** The external site lists these URLs, but we have not independently verified live HTTP status, segment availability, browser CORS or successful playback. Reported "4K"/bitrates were not treated as verified manifest metadata. The app shows an external source link on each newly added item.
 
 ## Run locally
 
