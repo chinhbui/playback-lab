@@ -62,7 +62,7 @@
           <select id="mode-filter" aria-label="Lọc theo loại nội dung"><option value="all">All types</option><option value="live">LIVE</option><option value="vod">VOD</option></select>
         </div>
         <div class="catalog-hint"><span class="hint-swatch"></span> Nút sáng = có thể thử theo định dạng &amp; API browser; không bảo đảm codec, CORS, DRM hoặc nguồn đang hoạt động.</div>
-        <div class="stream-list" id="stream-list" aria-live="polite"></div>
+        <div class="stream-list" id="stream-list" role="region" aria-label="Danh sách luồng, cuộn để xem thêm" tabindex="0" aria-live="polite"></div>
         <div class="empty-state" id="empty-state" hidden><span>⌕</span><strong>Không tìm thấy luồng</strong><p>Hãy thử bộ lọc khác hoặc thêm URL của bạn.</p></div>
       </div>
 

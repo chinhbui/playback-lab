@@ -163,6 +163,34 @@ dialog::backdrop{background:#050a12cb;backdrop-filter:blur(6px)}
 .form-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-error{color:#ffaaa8;font-size:12px;margin-bottom:12px}
 .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:9px}
+/* Desktop: scroll the stream cards independently while keeping the full inspector visible. */
+@media (min-width:801px){
+  .stream-list{
+    max-height:clamp(380px,calc(100vh - 225px),900px);
+    max-height:clamp(380px,calc(100dvh - 225px),900px);
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    scrollbar-gutter:stable;
+    scrollbar-width:thin;
+    scrollbar-color:#466778 #13202e;
+    align-content:start;
+    padding:3px 10px 10px 3px;
+  }
+  .stream-list::-webkit-scrollbar,.inspector::-webkit-scrollbar{width:8px}
+  .stream-list::-webkit-scrollbar-thumb,.inspector::-webkit-scrollbar-thumb{background:#466778;border-radius:8px}
+  .stream-list::-webkit-scrollbar-track,.inspector::-webkit-scrollbar-track{background:transparent}
+  .inspector{
+    position:sticky;
+    top:16px;
+    align-self:start;
+    max-height:calc(100vh - 32px);
+    max-height:calc(100dvh - 32px);
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#466778 transparent;
+  }
+}
 @media(max-width:1180px){.shell{width:min(100% - 48px,1440px)}.workspace{grid-template-columns:minmax(0,1fr) minmax(330px,.9fr);gap:23px}.summary-item{min-width:0;flex:1;padding:16px}.summary-note{display:none}.stream-list{grid-template-columns:1fr}.card-visual{height:70px}.card-description{min-height:0}}
 @media(max-width:800px){.hero{grid-template-columns:1fr;min-height:0;padding:47px 0}.hero-graphic{display:none}.summary-strip{margin:0 0 45px}.workspace{grid-template-columns:1fr}.inspector{position:static}.stream-list{grid-template-columns:repeat(2,minmax(0,1fr))}.card-visual{height:86px}}
 @media(max-width:600px){.shell{width:calc(100% - 30px)}.site-header{height:73px}.brand strong{font-size:12px}.brand small{font-size:7px}.brand-icon{width:34px;height:34px}.header-indicator{display:none}.header-right{gap:8px}.hero h1{font-size:54px}.hero p{font-size:13px}.hero-actions{gap:19px;flex-wrap:wrap}.summary-strip{min-height:75px}.summary-item{gap:10px;padding:11px 9px}.summary-item strong{font-size:15px}.summary-icon{display:none}.summary-item small{font-size:9px}.section-heading h2,.inspector-heading h2{font-size:22px}.section-heading>.secondary-btn{font-size:10px;padding:9px}.filters{grid-template-columns:1fr 1fr}.search-box{grid-column:1/-1}.stream-list{grid-template-columns:1fr}.card-visual{height:85px}.card-description{min-height:0}.metrics>div{padding:12px 10px}.metrics span{font-size:8px}.metrics strong{font-size:13px}footer{flex-direction:column;margin-top:50px}.stream-form{padding:19px}}
