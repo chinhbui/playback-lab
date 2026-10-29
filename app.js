@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // Static, DRM-free samples. Availability and CORS are controlled by third parties.
+  // Static test samples; third parties control manifest availability and CORS.
   const SAMPLES = [
     {
       id: "mux-bunny", title: "Big Buck Bunny", source: "Mux test streams",
@@ -44,7 +44,16 @@
       description: "DASH live • dynamic manifest / SegmentTimeline",
       url: "https://livesim2.dashif.org/livesim2/segtimeline_1/testpic_2s/Manifest.mpd",
       format: "dash", kind: "live", codec: "H.264", drm: "clear"
-    }
+    },
+    // Additional external manifest fixtures (collected 2026-10-29; runtime validation required).
+    {"id":"site-tears-ism","title":"Tears of Steel · HLS (ISM)","source":"m3u8-player.net test collection","description":"Unified Streaming demo • adaptive HLS packaging","url":"https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8","format":"hls","kind":"vod","codec":"Unverified","drm":"clear","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"},
+    {"id":"site-apple-hevc","title":"Apple BipBop · HEVC","source":"m3u8-player.net test collection","description":"HEVC HLS example • test device / codec support","url":"https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8","format":"hls","kind":"vod","codec":"HEVC","drm":"clear","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"},
+    {"id":"site-akamai-sintel","title":"Sintel · HLS ABR","source":"m3u8-player.net test collection","description":"Akamai demo • HLS adaptive bitrate test","url":"https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8","format":"hls","kind":"vod","codec":"Unverified","drm":"clear","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"},
+    {"id":"site-nasa-live","title":"NASA TV · Live","source":"m3u8-player.net test collection","description":"External public live source • availability may change","url":"https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8","format":"hls","kind":"live","codec":"Unverified","drm":"clear","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"},
+    {"id":"site-bloomberg-live","title":"Bloomberg TV · Live","source":"m3u8-player.net test collection","description":"External live news stream • region / CORS dependent","url":"https://bloomberg-bloomberg-1-eu.rakuten.wurl.tv/playlist.m3u8","format":"hls","kind":"live","codec":"Unverified","drm":"clear","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"},
+    {"id":"site-akamai-eight","title":"Akamai Eight · Live","source":"m3u8-player.net HLS debugging guide","description":"Additional live HLS test source • external uptime","url":"https://moctobpltc-i.akamaihd.net/hls/live/571329/eight/playlist.m3u8","format":"hls","kind":"live","codec":"Unverified","drm":"clear","referenceUrl":"https://m3u8-player.net/blog/comprehensive-m3u8-test-links-and-hls-debugging-guide//"},
+    {"id":"site-tears-mp4","title":"Tears of Steel · MP4 HLS","source":"m3u8-player.net HLS debugging guide","description":"Unified Streaming alternate HLS packaging example","url":"https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.mp4/.m3u8","format":"hls","kind":"vod","codec":"Unverified","drm":"clear","referenceUrl":"https://m3u8-player.net/blog/comprehensive-m3u8-test-links-and-hls-debugging-guide//"},
+    {"id":"site-angel-widevine","title":"Angel One · Widevine DASH","source":"m3u8-player.net test collection","description":"DRM fixture • Shaka requires license server configuration","url":"https://storage.googleapis.com/shaka-demo-assets/angel-one-widevine/dash.mpd","format":"dash","kind":"vod","codec":"Unverified","drm":"license-required","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"}
   ];
 
   const STORAGE_KEY = "playback-lab:custom-streams:v1";
@@ -157,6 +166,15 @@
       const body = node("div", "card-body");
       const titleRow = node("div", "card-title-line");
       titleRow.append(node("h3", "card-title", s.title));
+      if (s.referenceUrl) {
+        const reference = node("a", "reference-link", "Source ↗");
+        reference.href = s.referenceUrl;
+        reference.target = "_blank";
+        reference.rel = "noopener noreferrer";
+        reference.title = "External test URL listing (playback not verified)";
+        reference.setAttribute("aria-label", "Nguồn của " + s.title);
+        titleRow.append(reference);
+      }
       if (s.custom) {
         const remove = node("button", "remove-btn", "×");
         remove.type = "button";
@@ -189,6 +207,7 @@
         button.setAttribute("aria-label", "Phát " + s.title + " bằng " + (engine === "hls" ? "hls.js" : "Shaka"));
         actions.append(button);
       }
+      if (s.referenceUrl) tags.append(badge("EXTERNAL", "tag-neutral"));
       body.append(titleRow, description, url, tags, actions);
       card.append(visual, body);
       fragment.append(card);
