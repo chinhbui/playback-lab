@@ -2,6 +2,8 @@
 
 A zero-build, browser-based **HLS / MPEG-DASH playback testing workspace**.
 
+**GitHub Pages:** [Open Playback Lab](https://chinhbui.github.io/playback-lab/) (available when GitHub Pages is enabled).
+
 ## Stream Library
 
 Open `index.html` through a local HTTP server or publish this repository as a GitHub Pages site. The page provides:
