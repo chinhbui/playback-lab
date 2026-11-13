@@ -53,13 +53,13 @@ The supplied THEOplayer Web SDK **11.8.0** bundle is served from `vendor/theopla
 
 Its UI CSS, transmux workers, WebAssembly, iframe and decoder assets come from the matching **11.8.0** npm release and are hosted alongside the bundle. `libraryLocation` points to this directory on the same origin, including under the Pages repository path. This also allows MPEG-TS HLS transmuxing without the cross-origin worker/iframe setup used previously. Keep these versions aligned when replacing the bundle.
 
-1. Open **Cấu hình THEOplayer** above the catalog.
-2. Enter an SDK license valid for the current domain (`chinhbui.github.io` on Pages, localhost for local testing), then select **Áp dụng**.
-3. Select **THEOplayer** on an unencrypted HLS or DASH stream.
+1. Open the [lab](https://chinhbui.github.io/playback-lab/).
+2. Select **THEOplayer** on an unencrypted HLS or DASH stream. No license entry or URL flag is needed in the lab's default test mode.
+3. To test normal SDK licensing instead, open `?theoTest=0`, expand **Cấu hình THEOplayer**, enter a license valid for the current domain, and select **Áp dụng**.
 
-No license is bundled. Without a license, THEOplayer buttons stay disabled while hls.js and Shaka remain available. Entering text enables an attempt; the SDK validates the license. Invalid/expired/domain-mismatched licenses appear in the player and event log. The license stays only in memory until reload; **Xóa** clears it. It is never saved in localStorage or the repository and is passed to the SDK for validation.
+No license is bundled. In normal mode (`?theoTest=0`), THEOplayer buttons stay disabled until a license is entered; the SDK validates it at playback. Invalid/expired/domain-mismatched licenses appear in the player and event log. The license stays only in memory until reload; **Xóa** clears it. It is never saved in localStorage or the repository.
 
-For integration testing, open `?theoTest=1` (for example [Pages test mode](https://chinhbui.github.io/playback-lab/?theoTest=1)). This enables clear HLS/DASH playback without entering a license. A visible notice marks test mode. The vendored SDK's license resolver returns a local test record instead of parsing/fetching a license only for this exact flag. DRM fixtures and missing-SDK gates remain in effect. Remove the query parameter to use the original SDK resolver and normal app gating; the flag is not persisted.
+This lab defaults to test mode when `theoTest` is absent. `?theoTest=1` explicitly enables the same mode. A visible notice marks test mode; the vendored SDK's license resolver returns a local test record instead of parsing/fetching a license. `?theoTest=0` opts into the original SDK resolver and normal app gating. Other explicit values (including empty or `true`) also use normal mode. DRM fixtures and missing-SDK gates remain in effect. The mode is determined by the URL and is not persisted.
 
 The change is reproducible with `node scripts/patch-theoplayer.cjs`. The script checks the original bundle's SHA-256 and a unique resolver marker before applying the patch. Re-running it verifies the same original bytes can be restored and applies the same patch. This is a modified lab bundle, not an upstream THEOplayer release.
 
@@ -98,14 +98,14 @@ On **all viewports**, choosing an enabled **hls.js**, **Shaka**, or **THEOplayer
 
 ## Static asset cache control on GitHub Pages
 
-This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.6`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-sdk-test-6`) or a hard refresh if the build marker is missing.
+This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.7`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-default-test-7`) or a hard refresh if the build marker is missing.
 
 ## Compatibility and limitations
 
 | Stream | hls.js | Shaka | THEOplayer |
 | --- | --- | --- | --- |
-| HLS (`.m3u8`), unencrypted | Possible when `Hls.isSupported()` | Possible when `shaka.Player.isBrowserSupported()` | SDK available + license entered; runtime validation required |
-| DASH (`.mpd`), unencrypted | Not supported | Possible when browser APIs support it | SDK available + license entered; runtime validation required |
+| HLS (`.m3u8`), unencrypted | Possible when `Hls.isSupported()` | Possible when `shaka.Player.isBrowserSupported()` | SDK available; test mode by default, license required with `?theoTest=0` |
+| DASH (`.mpd`), unencrypted | Not supported | Possible when browser APIs support it | SDK available; test mode by default, license required with `?theoTest=0` |
 | DRM-protected stream | Not configured in this lab | Not configured in this lab | Not configured in this lab |
 
 **A selectable button is not a promise of successful playback.** The app gates player selection by declared manifest format and broad browser API support. It cannot reliably know codec support, segment availability, CORS permissions, encryption schemes, or actual DRM compatibility without attempting to load the stream.

@@ -58,7 +58,8 @@
 
   const ENGINE_LABELS = { hls: "hls.js", shaka: "Shaka", theo: "THEOplayer" };
   const THEO_LIBRARY = new URL("./vendor/theoplayer/", document.baseURI).href;
-  const THEO_TEST_MODE = new URLSearchParams(window.location.search).get("theoTest") === "1";
+  const THEO_TEST_FLAG = new URLSearchParams(window.location.search).get("theoTest");
+  const THEO_TEST_MODE = THEO_TEST_FLAG === null || THEO_TEST_FLAG === "1";
   const THEO_NO_LICENSE_STATUS = THEO_TEST_MODE
     ? "Test mode: đã bỏ kiểm tra SDK license cho clear HLS/DASH trong bundle thử nghiệm."
     : "Chưa có license. THEOplayer tạm khóa.";

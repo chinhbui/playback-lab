@@ -56,7 +56,7 @@ const fakeSDK = `window.testPlayers = []; window.THEOplayer = {Player: class {
 test('real SDK: no license, invalid license, cleanup and reload', {timeout:60000}, async () => {
   const page = await browser.newPage(); const errors=[]; page.on('pageerror', e=>errors.push(e.message));
   try {
-    await page.goto(base); await page.waitForSelector('[data-engine=theo]');
+    await page.goto(base+'/?theoTest=0'); await page.waitForSelector('[data-engine=theo]');
     assert.equal(await page.locator('[data-engine=theo]').count(), 15);
     assert.equal(await page.locator('[data-engine=theo]:enabled').count(), 0);
     assert.equal(await page.evaluate(()=>typeof THEOplayer.Player), 'function');
@@ -79,7 +79,7 @@ test('player integration: HLS/DASH sources, events, metrics, close/reopen, clear
   const page = await browser.newPage({viewport:{width:390,height:844}}); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/vendor/theoplayer/THEOplayer.js*', route => route.fulfill({contentType:'text/javascript',body:fakeSDK}));
   try {
-    await page.goto(base); await applyLicense(page);
+    await page.goto(base+'/?theoTest=0'); await applyLicense(page);
     for (const [id, type] of [['mux-bunny','application/x-mpegurl'],['shaka-sintel','application/dash+xml']]) {
       await page.locator(`[data-play=${id}][data-engine=theo]`).click();
       await page.waitForFunction(()=>document.querySelector('#player-status').textContent==='PLAYING');
@@ -103,14 +103,14 @@ test('player integration: HLS/DASH sources, events, metrics, close/reopen, clear
   } finally { await page.close(); }
 });
 
-test('patched SDK test flag plays clear HLS/DASH without a license and resets without flag', {timeout:180000}, async () => {
+test('default SDK test mode plays clear HLS/DASH without a license and supports explicit opt-out', {timeout:180000}, async () => {
   const page=await browser.newPage(); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
   await useLocalMediaFixtures(page);
   let requests=[];
   page.on('response', response=>requests.push({status:response.status(),url:response.url()}));
   page.on('requestfailed', request=>requests.push({error:request.failure()?.errorText,url:request.url()}));
   try {
-    await page.goto(base+'/?theoTest=1'); await page.waitForSelector('[data-engine=theo]');
+    await page.goto(base); await page.waitForSelector('[data-engine=theo]');
     assert.equal(await page.locator('#theo-test-notice').isVisible(),true);
     assert.equal(await page.locator('[data-engine=theo]:enabled').count(),14);
     assert.equal(await page.locator('[data-play=site-angel-widevine][data-engine=theo]').isDisabled(),true);
@@ -130,11 +130,13 @@ test('patched SDK test flag plays clear HLS/DASH without a license and resets wi
     await page.locator('#clear-theo-license').click();
     assert.equal(await page.locator('[data-engine=theo]:enabled').count(),14);
     assert.match(await page.locator('#theo-license-status').innerText(), /Test mode/);
-    for (const query of ['', '?theoTest=0', '?theoTest=true']) {
+    for (const query of ['?theoTest=0', '?theoTest=true', '?theoTest=']) {
       await page.goto(base+'/'+query); await page.waitForSelector('[data-engine=theo]');
       assert.equal(await page.locator('[data-engine=theo]:enabled').count(),0);
       assert.equal(await page.locator('#theo-test-notice').isHidden(),true);
     }
+    await page.goto(base+'/?theoTest=1'); await page.waitForSelector('[data-engine=theo]');
+    assert.equal(await page.locator('[data-engine=theo]:enabled').count(),14);
     assert.deepEqual(errors,[]);
   } finally { await page.close(); }
 });

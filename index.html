@@ -7,12 +7,12 @@
   <meta name="description" content="Playback Lab — test HLS và MPEG-DASH bằng hls.js, Shaka Player hoặc THEOplayer.">
   <title>Stream Library · Playback Lab</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="./styles.css?v=20261113-theoplayer-sdk-test-6">
+  <link rel="stylesheet" href="./styles.css?v=20261113-theoplayer-default-test-7">
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/shaka-player@5/dist/shaka-player.compiled.min.js"></script>
   <link rel="stylesheet" href="./vendor/theoplayer/ui.css?v=11.8.0">
-  <script defer src="./vendor/theoplayer/THEOplayer.js?v=11.8.0-test-6"></script>
-  <script defer src="./app.js?v=20261113-theoplayer-sdk-test-6"></script>
+  <script defer src="./vendor/theoplayer/THEOplayer.js?v=11.8.0-default-test-7"></script>
+  <script defer src="./app.js?v=20261113-theoplayer-default-test-7"></script>
 </head>
 <body>
   <header class="site-header">
@@ -64,11 +64,11 @@
           <select id="mode-filter" aria-label="Lọc theo loại nội dung"><option value="all">All types</option><option value="live">LIVE</option><option value="vod">VOD</option></select>
         </div>
         <details class="theo-settings">
-          <summary>Cấu hình THEOplayer · cần SDK license</summary>
+          <summary>Cấu hình THEOplayer · test mode mặc định</summary>
           <form id="theo-license-form">
             <label for="theo-license">THEOplayer license</label>
             <div class="theo-license-row"><input id="theo-license" type="password" autocomplete="off" spellcheck="false" placeholder="License hợp lệ cho domain hiện tại" aria-describedby="theo-license-help"><button type="submit" class="secondary-btn">Áp dụng</button><button type="button" id="clear-theo-license" class="secondary-btn">Xóa</button></div>
-            <p id="theo-license-help">THEOplayer cần license hợp lệ; hls.js và Shaka vẫn dùng được khi chưa có license. License chỉ giữ trong bộ nhớ đến khi tải lại trang.</p>
+            <p id="theo-license-help">Lab mặc định bỏ kiểm tra SDK license. Dùng ?theoTest=0 để thử với license thật. License nhập ở đây chỉ giữ trong bộ nhớ đến khi tải lại trang.</p>
             <p id="theo-license-status" role="status" aria-live="polite"></p>
           </form>
         </details>
@@ -107,7 +107,7 @@
         <div class="inspector-help"><span>ⓘ</span><p>Trang này chạy hoàn toàn ở client. Các URL bên ngoài phải cho phép CORS; stream DRM cần tích hợp license server riêng.</p></div>
       </aside>
     </section>
-    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments. <span class="release-label" title="Site build marker">BUILD 2026.11.13.6</span></span></footer>
+    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments. <span class="release-label" title="Site build marker">BUILD 2026.11.13.7</span></span></footer>
   </main>
 
   <dialog id="stream-dialog" aria-labelledby="dialog-title">
