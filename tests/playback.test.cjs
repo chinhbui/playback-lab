@@ -60,14 +60,14 @@ test('real SDK: no license, invalid license, cleanup and reload', {timeout:60000
 
 test('player integration: HLS/DASH sources, events, metrics, close/reopen, clear license', {timeout:60000}, async () => {
   const page = await browser.newPage({viewport:{width:390,height:844}}); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
-  await page.route('**/theoplayer@*/THEOplayer.js', route => route.fulfill({contentType:'text/javascript',body:fakeSDK}));
+  await page.route('**/vendor/theoplayer/THEOplayer.js*', route => route.fulfill({contentType:'text/javascript',body:fakeSDK}));
   try {
     await page.goto(base); await applyLicense(page);
     for (const [id, type] of [['mux-bunny','application/x-mpegurl'],['shaka-sintel','application/dash+xml']]) {
       await page.locator(`[data-play=${id}][data-engine=theo]`).click();
       await page.waitForFunction(()=>document.querySelector('#player-status').textContent==='PLAYING');
       assert.equal(await page.evaluate(()=>testPlayers.at(-1).loadedSource.sources[0].type), type);
-      assert.equal(await page.evaluate(()=>testPlayers.at(-1).config.libraryLocation), 'https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/');
+      assert.equal(await page.evaluate(()=>testPlayers.at(-1).config.libraryLocation), 'https://cdn.jsdelivr.net/npm/theoplayer@11.8.0/');
       await page.waitForFunction(()=>document.querySelector('#metric-time').textContent==='00:12');
       assert.equal(await page.locator('#metric-buffer').textContent(),'8.0s');
       assert.equal(await page.locator('#metric-resolution').textContent(),'640×360');
@@ -110,9 +110,9 @@ test('test flag enables unlicensed SDK attempts, retains DRM gate, and resets wi
   } finally { await page.close(); }
 });
 
-test('missing THEOplayer CDN leaves hls.js and Shaka available even in test mode', {timeout:60000}, async () => {
+test('missing THEOplayer bundle leaves hls.js and Shaka available even in test mode', {timeout:60000}, async () => {
   const page=await browser.newPage();
-  await page.route('**/theoplayer@*/THEOplayer.js', route=>route.abort());
+  await page.route('**/vendor/theoplayer/THEOplayer.js*', route=>route.abort());
   try {
     await page.goto(base+'/?theoTest=1'); await page.waitForSelector('[data-engine=theo]'); await applyLicense(page);
     assert.equal(await page.locator('[data-engine=theo]:enabled').count(),0);

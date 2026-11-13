@@ -57,7 +57,7 @@
   ];
 
   const ENGINE_LABELS = { hls: "hls.js", shaka: "Shaka", theo: "THEOplayer" };
-  const THEO_LIBRARY = "https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/";
+  const THEO_LIBRARY = "https://cdn.jsdelivr.net/npm/theoplayer@11.8.0/";
   const THEO_TEST_MODE = new URLSearchParams(window.location.search).get("theoTest") === "1";
   const THEO_NO_LICENSE_STATUS = THEO_TEST_MODE
     ? "Test mode: có thể thử SDK khi chưa nhập license; SDK vẫn xác thực license."
@@ -153,7 +153,7 @@
       return { ok: true, reason: "Có thể thử bằng Shaka (chưa kiểm tra codec / CORS)." };
     }
     if (engine === "theo") {
-      if (!browserSupport().theo) return { ok: false, reason: "THEOplayer SDK không khả dụng; kiểm tra CDN." };
+      if (!browserSupport().theo) return { ok: false, reason: "THEOplayer SDK không khả dụng; kiểm tra file THEOplayer.js." };
       if (!theoLicense && !THEO_TEST_MODE) return { ok: false, reason: "Nhập license trong Cấu hình THEOplayer để thử phát." };
       return { ok: true, reason: "Thử THEOplayer; SDK sẽ kiểm tra license, codec và hỗ trợ browser khi tải." };
     }

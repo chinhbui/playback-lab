@@ -45,11 +45,13 @@ python3 -m http.server 8080
 
 Visit [http://localhost:8080](http://localhost:8080).
 
-There is no build step, framework, backend, account, or API key required for the page itself. The hls.js, Shaka Player, and THEOplayer browser bundles are fetched from jsDelivr at runtime, so an internet connection is required.
+There is no build step, framework, backend, account, or API key required for the page itself. hls.js and Shaka load from jsDelivr. THEOplayer's JavaScript bundle is hosted in this repository; its CSS and supporting SDK assets load from jsDelivr, so internet access is still required.
 
 ## THEOplayer setup
 
-THEOplayer Web SDK **11.15.1** and its UI load from jsDelivr, with the same pinned version in the script URL and `libraryLocation`.
+The supplied THEOplayer Web SDK **11.8.0** bundle is served from `vendor/theoplayer/THEOplayer.js`. It is copied unchanged from the workspace's `02-players-on-apple-ecosystem/player/THEOplayer.js`, preserving the original license header. SHA-256: `f347cfbe5f723a7481216286fd86d704aeb84ef0ec14279639ffe3e55bd8e189`.
+
+Its UI CSS and supporting assets (`libraryLocation`) use the matching **11.8.0** npm release on jsDelivr. Keep these versions aligned when replacing the local bundle.
 
 1. Open **Cấu hình THEOplayer** above the catalog.
 2. Enter an SDK license valid for the current domain (`chinhbui.github.io` on Pages, localhost for local testing), then select **Áp dụng**.
@@ -76,7 +78,7 @@ npm test
 ```
 
 To use installed Google Chrome instead: `PLAYWRIGHT_CHANNEL=chrome npm test`.
-The suite starts its own local server. It checks the real SDK's invalid-license path and repeat initialization, missing-CDN fallback, and a player double for HLS/DASH source mapping, events, metrics and cleanup on mobile. A network-dependent regression test verifies actual hls.js HLS and Shaka DASH playheads advance. Internet access to jsDelivr and sample streams is required.
+The suite starts its own local server. It checks the supplied real SDK's invalid-license path and repeat initialization, test-flag behavior, missing-SDK fallback, and a player double for HLS/DASH source mapping, events, metrics and cleanup on mobile. A network-dependent regression test verifies actual hls.js HLS and Shaka DASH playheads advance. Internet access to jsDelivr and sample streams is required.
 
 ## Deploy with GitHub Pages
 
@@ -94,7 +96,7 @@ On **all viewports**, choosing an enabled **hls.js**, **Shaka**, or **THEOplayer
 
 ## Static asset cache control on GitHub Pages
 
-This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.4`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-test-4`) or a hard refresh if the build marker is missing.
+This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.5`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-local-5`) or a hard refresh if the build marker is missing.
 
 ## Compatibility and limitations
 
