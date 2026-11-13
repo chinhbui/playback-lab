@@ -86,11 +86,35 @@ test('player integration: HLS/DASH sources, events, metrics, close/reopen, clear
   } finally { await page.close(); }
 });
 
-test('missing THEOplayer CDN leaves hls.js and Shaka available', {timeout:60000}, async () => {
+test('test flag enables unlicensed SDK attempts, retains DRM gate, and resets without flag', {timeout:60000}, async () => {
+  const page=await browser.newPage(); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+  try {
+    await page.goto(base+'/?theoTest=1'); await page.waitForSelector('[data-engine=theo]');
+    assert.equal(await page.locator('#theo-test-notice').isVisible(),true);
+    assert.equal(await page.locator('[data-engine=theo]:enabled').count(),14);
+    assert.equal(await page.locator('[data-play=site-angel-widevine][data-engine=theo]').isDisabled(),true);
+    await page.locator('[data-play=mux-bunny][data-engine=theo]').click();
+    await page.waitForFunction(()=>document.querySelector('#player-status').textContent==='ERROR');
+    assert.match(await page.locator('#event-log').innerText(), /license/i);
+    await page.locator('#close-player').click(); await cleanConsole(page);
+    await applyLicense(page);
+    await page.locator('#clear-theo-license').click();
+    assert.equal(await page.locator('[data-engine=theo]:enabled').count(),14);
+    assert.match(await page.locator('#theo-license-status').innerText(), /Test mode/);
+    for (const query of ['', '?theoTest=0', '?theoTest=true']) {
+      await page.goto(base+'/'+query); await page.waitForSelector('[data-engine=theo]');
+      assert.equal(await page.locator('[data-engine=theo]:enabled').count(),0);
+      assert.equal(await page.locator('#theo-test-notice').isHidden(),true);
+    }
+    assert.deepEqual(errors,[]);
+  } finally { await page.close(); }
+});
+
+test('missing THEOplayer CDN leaves hls.js and Shaka available even in test mode', {timeout:60000}, async () => {
   const page=await browser.newPage();
   await page.route('**/theoplayer@*/THEOplayer.js', route=>route.abort());
   try {
-    await page.goto(base); await page.waitForSelector('[data-engine=theo]'); await applyLicense(page);
+    await page.goto(base+'/?theoTest=1'); await page.waitForSelector('[data-engine=theo]'); await applyLicense(page);
     assert.equal(await page.locator('[data-engine=theo]:enabled').count(),0);
     assert.equal(await page.locator('[data-play=mux-bunny][data-engine=hls]').isEnabled(),true);
     assert.equal(await page.locator('[data-play=shaka-sintel][data-engine=shaka]').isEnabled(),true);

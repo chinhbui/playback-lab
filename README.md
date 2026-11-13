@@ -57,6 +57,8 @@ THEOplayer Web SDK **11.15.1** and its UI load from jsDelivr, with the same pinn
 
 No license is bundled. Without a license, THEOplayer buttons stay disabled while hls.js and Shaka remain available. Entering text enables an attempt; the SDK validates the license. Invalid/expired/domain-mismatched licenses appear in the player and event log. The license stays only in memory until reload; **Xóa** clears it. It is never saved in localStorage or the repository and is passed to the SDK for validation.
 
+For integration testing, open `?theoTest=1` (for example [Pages test mode](https://chinhbui.github.io/playback-lab/?theoTest=1)). This explicitly skips the app's empty-license gate and enables clear HLS/DASH attempts without entering a license. A visible notice marks test mode. The real SDK still validates licensing and can reject playback; this flag does not bypass SDK licensing. DRM and missing-SDK gates remain in effect. Remove the query parameter to restore normal gating; the flag is not persisted.
+
 THEOplayer uses its own media element and controls inside the shared console. Its events and public media properties drive status and metrics. Closing or switching engines pauses/destroys the player and resets the container. DRM remains disabled for all engines.
 
 **Validation limit:** No valid license was available during integration. Successful THEOplayer HLS/DASH playback requires testing with a valid domain license. Tests with a player double verify integration behavior, not licensed playback.
@@ -92,7 +94,7 @@ On **all viewports**, choosing an enabled **hls.js**, **Shaka**, or **THEOplayer
 
 ## Static asset cache control on GitHub Pages
 
-This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.3`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-3`) or a hard refresh if the build marker is missing.
+This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.4`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-test-4`) or a hard refresh if the build marker is missing.
 
 ## Compatibility and limitations
 

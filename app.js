@@ -58,6 +58,10 @@
 
   const ENGINE_LABELS = { hls: "hls.js", shaka: "Shaka", theo: "THEOplayer" };
   const THEO_LIBRARY = "https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/";
+  const THEO_TEST_MODE = new URLSearchParams(window.location.search).get("theoTest") === "1";
+  const THEO_NO_LICENSE_STATUS = THEO_TEST_MODE
+    ? "Test mode: có thể thử SDK khi chưa nhập license; SDK vẫn xác thực license."
+    : "Chưa có license. THEOplayer tạm khóa.";
   const STORAGE_KEY = "playback-lab:custom-streams:v1";
   const byId = (id) => document.getElementById(id);
   const video = byId("video");
@@ -150,7 +154,7 @@
     }
     if (engine === "theo") {
       if (!browserSupport().theo) return { ok: false, reason: "THEOplayer SDK không khả dụng; kiểm tra CDN." };
-      if (!theoLicense) return { ok: false, reason: "Nhập license trong Cấu hình THEOplayer để thử phát." };
+      if (!theoLicense && !THEO_TEST_MODE) return { ok: false, reason: "Nhập license trong Cấu hình THEOplayer để thử phát." };
       return { ok: true, reason: "Thử THEOplayer; SDK sẽ kiểm tra license, codec và hỗ trợ browser khi tải." };
     }
     return { ok: false, reason: "Engine không xác định." };
@@ -657,17 +661,19 @@
     byId("theo-license").value = "";
     byId("theo-license-status").textContent = theoLicense
       ? "Đã áp dụng trong phiên này. SDK sẽ xác thực license khi phát."
-      : "Chưa có license. THEOplayer tạm khóa.";
+      : THEO_NO_LICENSE_STATUS;
     renderCatalog();
   });
   byId("clear-theo-license").addEventListener("click", () => {
     if (activeEngine === "theo") closePlayerModal();
     theoLicense = "";
     byId("theo-license").value = "";
-    byId("theo-license-status").textContent = "Đã xóa license. THEOplayer tạm khóa.";
+    byId("theo-license-status").textContent = "Đã xóa license. " + THEO_NO_LICENSE_STATUS;
     renderCatalog();
   });
 
+  byId("theo-test-notice").hidden = !THEO_TEST_MODE;
+  if (THEO_TEST_MODE) logEvent(THEO_NO_LICENSE_STATUS);
   renderCatalog();
   logEvent("Catalog ready. Chọn player trên từng item.", "success");
   if (!browserSupport().hls) logEvent("hls.js unavailable; kiểm tra MSE/MMS hoặc CDN.", "error");

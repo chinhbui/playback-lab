@@ -7,12 +7,12 @@
   <meta name="description" content="Playback Lab — test HLS và MPEG-DASH bằng hls.js, Shaka Player hoặc THEOplayer.">
   <title>Stream Library · Playback Lab</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="./styles.css?v=20261113-theoplayer-3">
+  <link rel="stylesheet" href="./styles.css?v=20261113-theoplayer-test-4">
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/shaka-player@5/dist/shaka-player.compiled.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/ui.css">
   <script defer src="https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/THEOplayer.js"></script>
-  <script defer src="./app.js?v=20261113-theoplayer-3"></script>
+  <script defer src="./app.js?v=20261113-theoplayer-test-4"></script>
 </head>
 <body>
   <header class="site-header">
@@ -72,6 +72,7 @@
             <p id="theo-license-status" role="status" aria-live="polite"></p>
           </form>
         </details>
+        <p id="theo-test-notice" class="catalog-hint" role="status" hidden>THEOplayer TEST MODE · Có thể thử SDK khi chưa nhập license. SDK vẫn xác thực license và có thể từ chối phát.</p>
         <div class="catalog-hint"><span class="hint-swatch"></span> Nút sáng = có thể thử theo định dạng &amp; API browser; không bảo đảm codec, CORS, DRM hoặc nguồn đang hoạt động.</div>
         <div class="stream-list" id="stream-list" role="region" aria-label="Danh sách luồng, cuộn để xem thêm" tabindex="0" aria-live="polite"></div>
         <div class="empty-state" id="empty-state" hidden><span>⌕</span><strong>Không tìm thấy luồng</strong><p>Hãy thử bộ lọc khác hoặc thêm URL của bạn.</p></div>
@@ -106,7 +107,7 @@
         <div class="inspector-help"><span>ⓘ</span><p>Trang này chạy hoàn toàn ở client. Các URL bên ngoài phải cho phép CORS; stream DRM cần tích hợp license server riêng.</p></div>
       </aside>
     </section>
-    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments. <span class="release-label" title="Site build marker">BUILD 2026.11.13.3</span></span></footer>
+    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments. <span class="release-label" title="Site build marker">BUILD 2026.11.13.4</span></span></footer>
   </main>
 
   <dialog id="stream-dialog" aria-labelledby="dialog-title">
