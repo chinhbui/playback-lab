@@ -384,7 +384,12 @@
     }
   });
   const handlePlayerViewportChange = (event) => {
-    if (!event.matches) closeMobilePlayer({ stopPlayback: false });
+    if (!event.matches) {
+      closeMobilePlayer({ stopPlayback: false });
+    } else if (activeId) {
+      // Returning from landscape/desktop sizing should not hide an active player.
+      openMobilePlayer();
+    }
   };
   if (mobilePlayerMedia.addEventListener) {
     mobilePlayerMedia.addEventListener("change", handlePlayerViewportChange);
