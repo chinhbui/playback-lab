@@ -62,7 +62,6 @@
   const streamList = byId("stream-list");
   const dialog = byId("stream-dialog");
   const playerInspector = byId("player-inspector");
-  const mobilePlayerMedia = window.matchMedia("(max-width: 980px)");
   const modalBackground = [
     document.querySelector(".site-header"),
     document.querySelector(".hero"),
@@ -297,14 +296,14 @@
   }
 
 
-  function openMobilePlayer() {
-    if (!mobilePlayerMedia.matches || playerInspector.classList.contains("is-mobile-open")) return;
+  function openPlayerModal() {
+    if (playerInspector.classList.contains("is-open")) return;
 
     modalScrollY = window.scrollY;
     savedBackgroundInert = modalBackground.map((element) => element.inert);
     document.body.style.top = "-" + modalScrollY + "px";
     document.body.classList.add("player-modal-open");
-    playerInspector.classList.add("is-mobile-open");
+    playerInspector.classList.add("is-open");
     playerInspector.setAttribute("role", "dialog");
     playerInspector.setAttribute("aria-modal", "true");
     playerInspector.setAttribute("aria-labelledby", "player-dialog-title");
@@ -313,10 +312,10 @@
     byId("close-player").focus({ preventScroll: true });
   }
 
-  function closeMobilePlayer({ stopPlayback = true } = {}) {
-    if (!playerInspector.classList.contains("is-mobile-open")) return;
+  function closePlayerModal({ stopPlayback = true } = {}) {
+    if (!playerInspector.classList.contains("is-open")) return;
 
-    playerInspector.classList.remove("is-mobile-open");
+    playerInspector.classList.remove("is-open");
     playerInspector.removeAttribute("role");
     playerInspector.removeAttribute("aria-modal");
     playerInspector.removeAttribute("aria-labelledby");
@@ -358,14 +357,14 @@
   }
 
   playerInspector.addEventListener("click", (event) => {
-    if (event.target === playerInspector) closeMobilePlayer();
+    if (event.target === playerInspector) closePlayerModal();
   });
-  byId("close-player").addEventListener("click", () => closeMobilePlayer());
+  byId("close-player").addEventListener("click", () => closePlayerModal());
   playerInspector.addEventListener("keydown", (event) => {
-    if (!playerInspector.classList.contains("is-mobile-open")) return;
+    if (!playerInspector.classList.contains("is-open")) return;
     if (event.key === "Escape") {
       event.preventDefault();
-      closeMobilePlayer();
+      closePlayerModal();
       return;
     }
     if (event.key !== "Tab") return;
@@ -383,20 +382,6 @@
       first.focus();
     }
   });
-  const handlePlayerViewportChange = (event) => {
-    if (!event.matches) {
-      closeMobilePlayer({ stopPlayback: false });
-    } else if (activeId) {
-      // Returning from landscape/desktop sizing should not hide an active player.
-      openMobilePlayer();
-    }
-  };
-  if (mobilePlayerMedia.addEventListener) {
-    mobilePlayerMedia.addEventListener("change", handlePlayerViewportChange);
-  } else {
-    mobilePlayerMedia.addListener(handlePlayerViewportChange);
-  }
-
   async function playStream(stream, engine) {
     const support = compatibility(stream, engine);
     if (!support.ok) {
@@ -408,7 +393,7 @@
     activeEngine = engine;
     lastPlaySelection = { id: stream.id, engine };
     showNowPlaying(stream, engine);
-    openMobilePlayer();
+    openPlayerModal();
     renderCatalog();
     logEvent("Loading " + stream.format.toUpperCase() + " via " + (engine === "hls" ? "hls.js" : "Shaka"));
 
