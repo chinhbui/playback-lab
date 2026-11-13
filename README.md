@@ -51,11 +51,15 @@ There is no build step, framework, backend, account, or API key required for the
 
 After merging the feature branch into `main`, open **Settings → Pages** for this repository and select **Deploy from a branch**, with `main` and `/(root)` as the publishing source. GitHub Pages can then serve the root `index.html`.
 
-## Mobile Safari player
+## Player Console modal (desktop and mobile)
 
-On screens up to 980 CSS pixels wide (including common iPhone portrait and landscape sizes), selecting an enabled **hls.js** or **Shaka** button opens the existing player console as a viewport modal rather than placing it beneath the catalog. The player video and close button are visible immediately; diagnostics scroll inside the modal. The page remains at its previous catalog scroll position when the modal is closed, and closing stops playback. On wider screens, the desktop sticky inspector layout remains unchanged.
+On **all viewports**, choosing an enabled **hls.js** or **Shaka** button opens the existing Player Console as an overlay immediately, without requiring the user to scroll to a separate inspector. The catalog now uses the full workspace width. Desktop shows a centered dialog up to 960px wide; phones and tablets use an adaptive viewport layout with safe-area padding and a directly visible video/close button. Diagnostics scroll inside the popup.
 
-**Manual QA:** Open GitHub Pages on an iPhone in Safari. Scroll to any stream, tap an enabled playback engine and confirm the video is visible without scrolling the main page. Scroll the modal to inspect metrics/logs, close it, and verify the catalog returns to the same position. Repeat in landscape, with Safari's toolbar expanded/collapsed, then verify desktop playback is unaffected. A stream's actual playback still depends on browser engine support, CORS and codec support.
+- Closing by the **×** button, clicking the overlay backdrop, or pressing **Escape** stops playback and restores catalog scroll/focus.
+- Keyboard Tab/Shift+Tab stay inside the Player Console while the modal is active.
+- The modal responds to desktop resizing, phone orientation changes, and Safari's changing viewport height.
+
+**Manual QA:** On desktop, open a stream with hls.js/Shaka and confirm a centered modal appears, with video visible before scrolling. Close with ×, Escape and backdrop; confirm playback stops and catalog scroll is restored. On iPhone Safari, repeat portrait/landscape with expanded/collapsed toolbars; scroll metrics/logs inside the modal. Check resizing across 980px and test rapid close/reopen. Actual playback still depends on browser engine support, CORS, DRM and codecs.
 
 ## Compatibility and limitations
 
