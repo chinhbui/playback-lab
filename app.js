@@ -61,12 +61,25 @@
   const video = byId("video");
   const streamList = byId("stream-list");
   const dialog = byId("stream-dialog");
+  const playerInspector = byId("player-inspector");
+  const mobilePlayerMedia = window.matchMedia("(max-width: 980px)");
+  const modalBackground = [
+    document.querySelector(".site-header"),
+    document.querySelector(".hero"),
+    document.querySelector(".summary-strip"),
+    document.querySelector(".catalog-column"),
+    document.querySelector("footer")
+  ].filter(Boolean);
   let customStreams = readCustomStreams();
   let activeId = null;
   let activeEngine = null;
   let hlsInstance = null;
   let shakaInstance = null;
   let loadSequence = 0;
+  let teardownQueue = Promise.resolve();
+  let modalScrollY = 0;
+  let savedBackgroundInert = [];
+  let lastPlaySelection = null;
 
   function node(tag, className, value) {
     const element = document.createElement(tag);
@@ -248,24 +261,28 @@
     setStatus("LOADING", "loading");
   }
 
-  async function teardown() {
+  function teardown() {
+    // Serialize cleanup so a fast close/reopen cannot clear a newer video's src.
     video.pause();
-    if (hlsInstance) {
-      const instance = hlsInstance;
-      hlsInstance = null;
-      instance.destroy();
-    }
-    if (shakaInstance) {
-      const instance = shakaInstance;
-      shakaInstance = null;
-      try {
-        await instance.destroy();
-      } catch (error) {
-        logEvent("Shaka destroy: " + String(error.message || error), "error");
+    teardownQueue = teardownQueue.catch(() => {}).then(async () => {
+      if (hlsInstance) {
+        const instance = hlsInstance;
+        hlsInstance = null;
+        instance.destroy();
       }
-    }
-    video.removeAttribute("src");
-    video.load();
+      if (shakaInstance) {
+        const instance = shakaInstance;
+        shakaInstance = null;
+        try {
+          await instance.destroy();
+        } catch (error) {
+          logEvent("Shaka destroy: " + String(error.message || error), "error");
+        }
+      }
+      video.removeAttribute("src");
+      video.load();
+    });
+    return teardownQueue;
   }
 
   async function tryPlay(sequence) {
@@ -279,6 +296,102 @@
     }
   }
 
+
+  function openMobilePlayer() {
+    if (!mobilePlayerMedia.matches || playerInspector.classList.contains("is-mobile-open")) return;
+
+    modalScrollY = window.scrollY;
+    savedBackgroundInert = modalBackground.map((element) => element.inert);
+    document.body.style.top = "-" + modalScrollY + "px";
+    document.body.classList.add("player-modal-open");
+    playerInspector.classList.add("is-mobile-open");
+    playerInspector.setAttribute("role", "dialog");
+    playerInspector.setAttribute("aria-modal", "true");
+    playerInspector.setAttribute("aria-labelledby", "player-dialog-title");
+    modalBackground.forEach((element) => { element.inert = true; });
+    playerInspector.querySelector(".player-card").scrollTop = 0;
+    byId("close-player").focus({ preventScroll: true });
+  }
+
+  function closeMobilePlayer({ stopPlayback = true } = {}) {
+    if (!playerInspector.classList.contains("is-mobile-open")) return;
+
+    playerInspector.classList.remove("is-mobile-open");
+    playerInspector.removeAttribute("role");
+    playerInspector.removeAttribute("aria-modal");
+    playerInspector.removeAttribute("aria-labelledby");
+    modalBackground.forEach((element, index) => { element.inert = savedBackgroundInert[index]; });
+    document.body.classList.remove("player-modal-open");
+    document.body.style.top = "";
+
+    // The page uses smooth scrolling globally; restoration must be immediate.
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, modalScrollY);
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
+
+    if (stopPlayback) {
+      loadSequence += 1;
+      activeId = null;
+      activeEngine = null;
+      video.pause();
+      teardown().catch((error) => logEvent("Player cleanup: " + String(error), "error"));
+      byId("video-placeholder").hidden = false;
+      byId("current-title").textContent = "Chưa chọn luồng";
+      byId("current-url").hidden = true;
+      byId("current-url").removeAttribute("href");
+      byId("current-description").textContent = "Chọn một luồng để bắt đầu phát.";
+      byId("engine-indicator").textContent = "NO ENGINE";
+      byId("now-tags").replaceChildren(badge("—"));
+      byId("metric-time").textContent = "--:--";
+      byId("metric-buffer").textContent = "—";
+      byId("metric-resolution").textContent = "—";
+      setStatus("IDLE");
+      renderCatalog();
+    }
+    // renderCatalog replaces the original clicked button, so resolve a fresh focus target.
+    if (lastPlaySelection) {
+      const target = Array.from(streamList.querySelectorAll("button[data-play]")).find((button) =>
+        button.dataset.play === lastPlaySelection.id && button.dataset.engine === lastPlaySelection.engine);
+      if (target) target.focus({ preventScroll: true });
+    }
+  }
+
+  playerInspector.addEventListener("click", (event) => {
+    if (event.target === playerInspector) closeMobilePlayer();
+  });
+  byId("close-player").addEventListener("click", () => closeMobilePlayer());
+  playerInspector.addEventListener("keydown", (event) => {
+    if (!playerInspector.classList.contains("is-mobile-open")) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMobilePlayer();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(playerInspector.querySelectorAll(
+      'button:not([disabled]),a[href],video[controls],[tabindex]:not([tabindex="-1"])'
+    )).filter((element) => element.getClientRects().length);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+  const handlePlayerViewportChange = (event) => {
+    if (!event.matches) closeMobilePlayer({ stopPlayback: false });
+  };
+  if (mobilePlayerMedia.addEventListener) {
+    mobilePlayerMedia.addEventListener("change", handlePlayerViewportChange);
+  } else {
+    mobilePlayerMedia.addListener(handlePlayerViewportChange);
+  }
+
   async function playStream(stream, engine) {
     const support = compatibility(stream, engine);
     if (!support.ok) {
@@ -288,7 +401,9 @@
     const sequence = ++loadSequence;
     activeId = stream.id;
     activeEngine = engine;
+    lastPlaySelection = { id: stream.id, engine };
     showNowPlaying(stream, engine);
+    openMobilePlayer();
     renderCatalog();
     logEvent("Loading " + stream.format.toUpperCase() + " via " + (engine === "hls" ? "hls.js" : "Shaka"));
 
