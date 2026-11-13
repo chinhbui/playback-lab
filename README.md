@@ -61,6 +61,10 @@ On **all viewports**, choosing an enabled **hls.js** or **Shaka** button opens t
 
 **Manual QA:** On desktop, open a stream with hls.js/Shaka and confirm a centered modal appears, with video visible before scrolling. Close with ×, Escape and backdrop; confirm playback stops and catalog scroll is restored. On iPhone Safari, repeat portrait/landscape with expanded/collapsed toolbars; scroll metrics/logs inside the modal. Check resizing across 980px and test rapid close/reopen. Actual playback still depends on browser engine support, CORS, DRM and codecs.
 
+## Static asset cache control on GitHub Pages
+
+This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.2`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-desktop-modal-2`) or a hard refresh if the build marker is missing.
+
 ## Compatibility and limitations
 
 | Stream | hls.js | Shaka |
