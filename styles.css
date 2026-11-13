@@ -100,7 +100,7 @@ a{color:inherit;text-decoration:none}
 .tag-format-dash{border-color:#38527a;color:#a7c7fb;background:#1d2d46}
 .tag-live{border-color:#765338;color:#e9bd85;background:#362a24}
 .tag-neutral{color:#96aab7}
-.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.card-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
 .engine-btn{border:1px solid #345e57;background:#17372f;color:#bdf3d7;border-radius:7px;font-size:11px;font-weight:750;min-height:37px;padding:8px 5px;transition:background .15s,border-color .15s}
 .engine-btn:hover:not(:disabled){background:#215446;border-color:#5dbd94}
 .engine-btn.shaka{background:#1a2f46;border-color:#3d587a;color:#bbd6ff}
@@ -219,3 +219,19 @@ body.player-modal-open{
   }
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+
+/* THEOplayer uses its own media element and controls inside the shared console. */
+.theo-settings{margin-bottom:16px;padding:13px;border:1px solid #344357;border-radius:9px;color:#a9bbce;font-size:12px}
+.theo-settings summary{cursor:pointer;color:#d7c9ff}
+.theo-settings form{margin-top:13px}
+.theo-settings label{display:block;margin-bottom:8px}
+.theo-license-row{display:flex;gap:8px;flex-wrap:wrap}
+.theo-license-row input{flex:1;min-width:140px;background:#121d2c;border:1px solid #59617c;border-radius:7px;color:#e2eef8;padding:10px}
+.theo-settings p{line-height:1.6;margin:9px 0 0}
+.engine-btn.theo{background:#302447;border-color:#695388;color:#e0cdff}
+.engine-btn.theo:hover:not(:disabled){background:#44345e;border-color:#ac8cdb}
+.engine-btn.theo:disabled{background:#17212d;border-color:#2a3845;color:#63778b}
+.engine-btn.theo.is-active{outline-color:#d4b5ff}
+.video-stage #video[hidden],.video-stage .theoplayer-container[hidden]{display:none}
+.video-stage .theoplayer-container{position:absolute;inset:0;width:100%;height:100%}
+.theoplayer-instance{width:100%;height:100%}

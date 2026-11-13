@@ -4,13 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090e18">
-  <meta name="description" content="Playback Lab — test HLS và MPEG-DASH bằng hls.js hoặc Shaka Player.">
+  <meta name="description" content="Playback Lab — test HLS và MPEG-DASH bằng hls.js, Shaka Player hoặc THEOplayer.">
   <title>Stream Library · Playback Lab</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="./styles.css?v=20261113-desktop-modal-2">
+  <link rel="stylesheet" href="./styles.css?v=20261113-theoplayer-3">
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/shaka-player@5/dist/shaka-player.compiled.min.js"></script>
-  <script defer src="./app.js?v=20261113-desktop-modal-2"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/ui.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/THEOplayer.js"></script>
+  <script defer src="./app.js?v=20261113-theoplayer-3"></script>
 </head>
 <body>
   <header class="site-header">
@@ -28,7 +30,7 @@
       <div class="hero-copy">
         <div class="eyebrow"><span class="eyebrow-rule"></span> MULTI-STREAM PLAYGROUND <span class="hero-version">/ 01</span></div>
         <h1 id="page-title">Stream <em>Library<span class="period">.</span></em></h1>
-        <p>Khám phá luồng HLS và MPEG-DASH. Chọn <strong>hls.js</strong> hoặc <strong>Shaka Player</strong> ngay trên từng item, thử phát và theo dõi chẩn đoán tại một nơi.</p>
+        <p>Khám phá luồng HLS và MPEG-DASH. Chọn <strong>hls.js</strong>, <strong>Shaka Player</strong> hoặc <strong>THEOplayer</strong> ngay trên từng item, thử phát và theo dõi chẩn đoán tại một nơi.</p>
         <div class="hero-actions">
           <button class="primary-btn" id="add-stream-top" type="button"><span aria-hidden="true">＋</span> Thêm luồng của bạn</button>
           <a class="text-link" href="#catalog">Khám phá catalog <span aria-hidden="true">↘</span></a>
@@ -45,7 +47,7 @@
 
     <section class="summary-strip" aria-label="Thông tin phòng lab">
       <div class="summary-item"><span class="summary-icon">▤</span><div><strong id="total-count">—</strong><small>Luồng trong catalog</small></div></div>
-      <div class="summary-item"><span class="summary-icon">⌘</span><div><strong>02</strong><small>Playback engines</small></div></div>
+      <div class="summary-item"><span class="summary-icon">⌘</span><div><strong>03</strong><small>Playback engines</small></div></div>
       <div class="summary-item"><span class="summary-icon">◈</span><div><strong>HLS + DASH</strong><small>Adaptive streaming</small></div></div>
       <div class="summary-item summary-note"><span class="pulse-dot"></span><span>Kiểm tra tương thích tại trình duyệt của bạn</span></div>
     </section>
@@ -61,6 +63,15 @@
           <select id="format-filter" aria-label="Lọc theo định dạng"><option value="all">All formats</option><option value="hls">HLS</option><option value="dash">DASH</option></select>
           <select id="mode-filter" aria-label="Lọc theo loại nội dung"><option value="all">All types</option><option value="live">LIVE</option><option value="vod">VOD</option></select>
         </div>
+        <details class="theo-settings">
+          <summary>Cấu hình THEOplayer · cần SDK license</summary>
+          <form id="theo-license-form">
+            <label for="theo-license">THEOplayer license</label>
+            <div class="theo-license-row"><input id="theo-license" type="password" autocomplete="off" spellcheck="false" placeholder="License hợp lệ cho domain hiện tại" aria-describedby="theo-license-help"><button type="submit" class="secondary-btn">Áp dụng</button><button type="button" id="clear-theo-license" class="secondary-btn">Xóa</button></div>
+            <p id="theo-license-help">THEOplayer cần license hợp lệ; hls.js và Shaka vẫn dùng được khi chưa có license. License chỉ giữ trong bộ nhớ đến khi tải lại trang.</p>
+            <p id="theo-license-status" role="status" aria-live="polite"></p>
+          </form>
+        </details>
         <div class="catalog-hint"><span class="hint-swatch"></span> Nút sáng = có thể thử theo định dạng &amp; API browser; không bảo đảm codec, CORS, DRM hoặc nguồn đang hoạt động.</div>
         <div class="stream-list" id="stream-list" role="region" aria-label="Danh sách luồng, cuộn để xem thêm" tabindex="0" aria-live="polite"></div>
         <div class="empty-state" id="empty-state" hidden><span>⌕</span><strong>Không tìm thấy luồng</strong><p>Hãy thử bộ lọc khác hoặc thêm URL của bạn.</p></div>
@@ -72,7 +83,8 @@
           <div class="player-topline"><span><span class="live-led"></span> LIVE PREVIEW</span><span id="engine-indicator">NO ENGINE</span></div>
           <div class="video-stage">
             <video id="video" playsinline controls preload="none" crossorigin="anonymous" aria-label="Trình phát video"></video>
-            <div class="video-placeholder" id="video-placeholder"><div class="placeholder-symbol">▶</div><strong>Ready when you are.</strong><span>Chọn hls.js hoặc Shaka từ catalog<br>để bắt đầu phát luồng.</span></div>
+            <div id="theo-container" class="theoplayer-container" hidden aria-label="Trình phát THEOplayer"></div>
+            <div class="video-placeholder" id="video-placeholder"><div class="placeholder-symbol">▶</div><strong>Ready when you are.</strong><span>Chọn hls.js, Shaka hoặc THEOplayer từ catalog<br>để bắt đầu phát luồng.</span></div>
           </div>
           <div class="now-playing">
             <div class="now-title-row"><span class="small-label">NOW PLAYING</span><span class="status-text" id="player-status">IDLE</span></div>
@@ -94,7 +106,7 @@
         <div class="inspector-help"><span>ⓘ</span><p>Trang này chạy hoàn toàn ở client. Các URL bên ngoài phải cho phép CORS; stream DRM cần tích hợp license server riêng.</p></div>
       </aside>
     </section>
-    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments. <span class="release-label" title="Site build marker">BUILD 2026.11.13.2</span></span></footer>
+    <footer><span>PLAYBACK.LAB <span class="brand-dot">/</span> STREAM LIBRARY</span><span>Built for real-world playback experiments. <span class="release-label" title="Site build marker">BUILD 2026.11.13.3</span></span></footer>
   </main>
 
   <dialog id="stream-dialog" aria-labelledby="dialog-title">

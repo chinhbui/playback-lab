@@ -56,6 +56,8 @@
     {"id":"site-angel-widevine","title":"Angel One · Widevine DASH","source":"m3u8-player.net test collection","description":"DRM fixture • Shaka requires license server configuration","url":"https://storage.googleapis.com/shaka-demo-assets/angel-one-widevine/dash.mpd","format":"dash","kind":"vod","codec":"Unverified","drm":"license-required","referenceUrl":"https://m3u8-player.net/tools/4k-m3u8-test-links/"}
   ];
 
+  const ENGINE_LABELS = { hls: "hls.js", shaka: "Shaka", theo: "THEOplayer" };
+  const THEO_LIBRARY = "https://cdn.jsdelivr.net/npm/theoplayer@11.15.1/";
   const STORAGE_KEY = "playback-lab:custom-streams:v1";
   const byId = (id) => document.getElementById(id);
   const video = byId("video");
@@ -74,6 +76,9 @@
   let activeEngine = null;
   let hlsInstance = null;
   let shakaInstance = null;
+  let theoInstance = null;
+  let theoLicense = "";
+  const theoContainer = byId("theo-container");
   let loadSequence = 0;
   let teardownQueue = Promise.resolve();
   let modalScrollY = 0;
@@ -119,7 +124,8 @@
     return {
       hls: typeof window.Hls !== "undefined" && Hls.isSupported(),
       shaka: typeof window.shaka !== "undefined" &&
-        !!shaka.Player && shaka.Player.isBrowserSupported()
+        !!shaka.Player && shaka.Player.isBrowserSupported(),
+        theo: typeof window.THEOplayer !== "undefined" && typeof window.THEOplayer.Player === "function"
     };
   }
 
@@ -141,6 +147,11 @@
         return { ok: false, reason: "Shaka Player không khả dụng trong browser." };
       }
       return { ok: true, reason: "Có thể thử bằng Shaka (chưa kiểm tra codec / CORS)." };
+    }
+    if (engine === "theo") {
+      if (!browserSupport().theo) return { ok: false, reason: "THEOplayer SDK không khả dụng; kiểm tra CDN." };
+      if (!theoLicense) return { ok: false, reason: "Nhập license trong Cấu hình THEOplayer để thử phát." };
+      return { ok: true, reason: "Thử THEOplayer; SDK sẽ kiểm tra license, codec và hỗ trợ browser khi tải." };
     }
     return { ok: false, reason: "Engine không xác định." };
   }
@@ -206,17 +217,17 @@
         badge(s.codec || "CODEC ?")
       );
       const actions = node("div", "card-actions");
-      for (const engine of ["hls", "shaka"]) {
+      for (const engine of ["hls", "shaka", "theo"]) {
         const support = compatibility(s, engine);
-        const button = node("button", "engine-btn " + (engine === "shaka" ? "shaka" : "") +
+        const button = node("button", "engine-btn " + (engine === "hls" ? "" : engine) +
           (activeId === s.id && activeEngine === engine ? " is-active" : ""),
-          engine === "hls" ? "▶ hls.js" : "▶ Shaka");
+          "▶ " + ENGINE_LABELS[engine]);
         button.type = "button";
         button.disabled = !support.ok;
         button.title = support.reason;
         button.dataset.play = s.id;
         button.dataset.engine = engine;
-        button.setAttribute("aria-label", "Phát " + s.title + " bằng " + (engine === "hls" ? "hls.js" : "Shaka"));
+        button.setAttribute("aria-label", "Phát " + s.title + " bằng " + ENGINE_LABELS[engine]);
         actions.append(button);
       }
       if (s.referenceUrl) tags.append(badge("EXTERNAL", "tag-neutral"));
@@ -250,7 +261,7 @@
     byId("current-url").hidden = false;
     byId("current-url").href = stream.url;
     byId("current-url").textContent = stream.url;
-    byId("engine-indicator").textContent = engine === "hls" ? "HLS.JS ENGINE" : "SHAKA ENGINE";
+    byId("engine-indicator").textContent = ENGINE_LABELS[engine].toUpperCase() + " ENGINE";
     const tags = byId("now-tags");
     tags.replaceChildren(
       badge(stream.format.toUpperCase(), stream.format === "hls" ? "tag-format-hls" : "tag-format-dash"),
@@ -263,6 +274,7 @@
   function teardown() {
     // Serialize cleanup so a fast close/reopen cannot clear a newer video's src.
     video.pause();
+    if (theoInstance) theoInstance.pause();
     teardownQueue = teardownQueue.catch(() => {}).then(async () => {
       if (hlsInstance) {
         const instance = hlsInstance;
@@ -278,16 +290,28 @@
           logEvent("Shaka destroy: " + String(error.message || error), "error");
         }
       }
+      if (theoInstance) {
+        const instance = theoInstance;
+        theoInstance = null;
+        try {
+          instance.destroy();
+        } catch (error) {
+          logEvent("THEOplayer destroy: " + String(error.message || error), "error");
+        }
+      }
+      theoContainer.replaceChildren();
+      theoContainer.hidden = true;
+      video.hidden = false;
       video.removeAttribute("src");
       video.load();
     });
     return teardownQueue;
   }
 
-  async function tryPlay(sequence) {
+  async function tryPlay(sequence, media = video) {
     if (sequence !== loadSequence) return;
     try {
-      await video.play();
+      await media.play();
     } catch (error) {
       if (sequence !== loadSequence) return;
       setStatus("READY", "loading");
@@ -369,7 +393,7 @@
     }
     if (event.key !== "Tab") return;
     const focusable = Array.from(playerInspector.querySelectorAll(
-      'button:not([disabled]),a[href],video[controls],[tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),video[controls],[tabindex]:not([tabindex="-1"])'
     )).filter((element) => element.getClientRects().length);
     if (!focusable.length) return;
     const first = focusable[0];
@@ -395,7 +419,7 @@
     showNowPlaying(stream, engine);
     openPlayerModal();
     renderCatalog();
-    logEvent("Loading " + stream.format.toUpperCase() + " via " + (engine === "hls" ? "hls.js" : "Shaka"));
+    logEvent("Loading " + stream.format.toUpperCase() + " via " + ENGINE_LABELS[engine]);
 
     try {
       await teardown();
@@ -420,7 +444,7 @@
           if (data.fatal) setStatus("ERROR", "error");
         });
         instance.attachMedia(video);
-      } else {
+      } else if (engine === "shaka") {
         const instance = new shaka.Player();
         shakaInstance = instance;
         instance.addEventListener("error", (event) => {
@@ -436,6 +460,40 @@
         if (sequence !== loadSequence) return;
         logEvent("Shaka manifest loaded.", "success");
         tryPlay(sequence);
+      } else if (engine === "theo") {
+        video.hidden = true;
+        theoContainer.hidden = false;
+        // SDK destroy removes its element; keep the outer host for the next load.
+        const element = node("div", "theoplayer-instance video-js theoplayer-skin");
+        theoContainer.replaceChildren(element);
+        const instance = new THEOplayer.Player(element, {
+          libraryLocation: THEO_LIBRARY,
+          license: theoLicense,
+          fluid: false
+        });
+        theoInstance = instance;
+        instance.addEventListener("loadedmetadata", () => {
+          if (sequence === loadSequence) logEvent("THEOplayer metadata loaded.", "success");
+        });
+        for (const [event, label, state] of [
+          ["playing", "PLAYING", "playing"], ["waiting", "BUFFERING", "loading"], ["ended", "ENDED", "idle"]
+        ]) {
+          instance.addEventListener(event, () => {
+            if (sequence !== loadSequence) return;
+            setStatus(label, state);
+            if (event !== "playing") logEvent("THEOplayer " + event);
+          });
+        }
+        instance.addEventListener("error", (event) => {
+          if (sequence !== loadSequence) return;
+          const error = instance.errorObject || event.error || instance.error || {};
+          setStatus("ERROR", "error");
+          logEvent("THEOplayer error " + (error.code || "") + ": " +
+            (error.message || "Kiểm tra SDK license, domain, CORS và codec."), "error");
+        });
+        instance.source = { sources: [{ src: stream.url,
+          type: stream.format === "hls" ? "application/x-mpegurl" : "application/dash+xml" }] };
+        tryPlay(sequence, instance);
       }
     } catch (error) {
       if (sequence !== loadSequence) return;
@@ -456,14 +514,16 @@
 
   function refreshMetrics() {
     if (!activeId) return;
-    const position = video.currentTime;
+    const media = activeEngine === "theo" ? theoInstance : video;
+    if (!media) return;
+    const position = media.currentTime;
     byId("metric-time").textContent = formatTime(position);
     byId("metric-resolution").textContent =
-      video.videoWidth && video.videoHeight ? video.videoWidth + "×" + video.videoHeight : "—";
+      media.videoWidth && media.videoHeight ? media.videoWidth + "×" + media.videoHeight : "—";
     let buffered = 0;
-    for (let i = 0; i < video.buffered.length; i += 1) {
-      if (video.buffered.start(i) <= position + 0.1 && video.buffered.end(i) >= position) {
-        buffered = Math.max(0, video.buffered.end(i) - position);
+    for (let i = 0; i < media.buffered.length; i += 1) {
+      if (media.buffered.start(i) <= position + 0.1 && media.buffered.end(i) >= position) {
+        buffered = Math.max(0, media.buffered.end(i) - position);
         break;
       }
     }
@@ -588,6 +648,24 @@
   });
   byId("clear-log").addEventListener("click", () => {
     byId("event-log").replaceChildren(node("li", "event-muted", "Event log đã xóa."));
+  });
+
+  byId("theo-license-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (activeEngine === "theo") closePlayerModal();
+    theoLicense = byId("theo-license").value.trim();
+    byId("theo-license").value = "";
+    byId("theo-license-status").textContent = theoLicense
+      ? "Đã áp dụng trong phiên này. SDK sẽ xác thực license khi phát."
+      : "Chưa có license. THEOplayer tạm khóa.";
+    renderCatalog();
+  });
+  byId("clear-theo-license").addEventListener("click", () => {
+    if (activeEngine === "theo") closePlayerModal();
+    theoLicense = "";
+    byId("theo-license").value = "";
+    byId("theo-license-status").textContent = "Đã xóa license. THEOplayer tạm khóa.";
+    renderCatalog();
   });
 
   renderCatalog();
