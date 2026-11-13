@@ -45,13 +45,13 @@ python3 -m http.server 8080
 
 Visit [http://localhost:8080](http://localhost:8080).
 
-There is no build step, framework, backend, account, or API key required for the page itself. hls.js and Shaka load from jsDelivr. THEOplayer's JavaScript bundle is hosted in this repository; its CSS and supporting SDK assets load from jsDelivr, so internet access is still required.
+There is no build step, framework, backend, account, or API key required for the page itself. hls.js and Shaka load from jsDelivr. THEOplayer's JavaScript, CSS and supporting SDK assets are hosted in this repository. Internet access is required for external streams and the other engines.
 
 ## THEOplayer setup
 
-The supplied THEOplayer Web SDK **11.8.0** bundle is served from `vendor/theoplayer/THEOplayer.js`. It is copied unchanged from the workspace's `02-players-on-apple-ecosystem/player/THEOplayer.js`, preserving the original license header. SHA-256: `f347cfbe5f723a7481216286fd86d704aeb84ef0ec14279639ffe3e55bd8e189`.
+The supplied THEOplayer Web SDK **11.8.0** bundle is served from `vendor/theoplayer/THEOplayer.js`, preserving the original license header. The original workspace file (`02-players-on-apple-ecosystem/player/THEOplayer.js`) has SHA-256 `f347cfbe5f723a7481216286fd86d704aeb84ef0ec14279639ffe3e55bd8e189`. The vendored copy includes the test-only modification described below; the workspace original is unchanged.
 
-Its UI CSS and supporting assets (`libraryLocation`) use the matching **11.8.0** npm release on jsDelivr. Keep these versions aligned when replacing the local bundle.
+Its UI CSS, transmux workers, WebAssembly, iframe and decoder assets come from the matching **11.8.0** npm release and are hosted alongside the bundle. `libraryLocation` points to this directory on the same origin, including under the Pages repository path. This also allows MPEG-TS HLS transmuxing without the cross-origin worker/iframe setup used previously. Keep these versions aligned when replacing the bundle.
 
 1. Open **Cấu hình THEOplayer** above the catalog.
 2. Enter an SDK license valid for the current domain (`chinhbui.github.io` on Pages, localhost for local testing), then select **Áp dụng**.
@@ -59,11 +59,13 @@ Its UI CSS and supporting assets (`libraryLocation`) use the matching **11.8.0**
 
 No license is bundled. Without a license, THEOplayer buttons stay disabled while hls.js and Shaka remain available. Entering text enables an attempt; the SDK validates the license. Invalid/expired/domain-mismatched licenses appear in the player and event log. The license stays only in memory until reload; **Xóa** clears it. It is never saved in localStorage or the repository and is passed to the SDK for validation.
 
-For integration testing, open `?theoTest=1` (for example [Pages test mode](https://chinhbui.github.io/playback-lab/?theoTest=1)). This explicitly skips the app's empty-license gate and enables clear HLS/DASH attempts without entering a license. A visible notice marks test mode. The real SDK still validates licensing and can reject playback; this flag does not bypass SDK licensing. DRM and missing-SDK gates remain in effect. Remove the query parameter to restore normal gating; the flag is not persisted.
+For integration testing, open `?theoTest=1` (for example [Pages test mode](https://chinhbui.github.io/playback-lab/?theoTest=1)). This enables clear HLS/DASH playback without entering a license. A visible notice marks test mode. The vendored SDK's license resolver returns a local test record instead of parsing/fetching a license only for this exact flag. DRM fixtures and missing-SDK gates remain in effect. Remove the query parameter to use the original SDK resolver and normal app gating; the flag is not persisted.
+
+The change is reproducible with `node scripts/patch-theoplayer.cjs`. The script checks the original bundle's SHA-256 and a unique resolver marker before applying the patch. Re-running it verifies the same original bytes can be restored and applies the same patch. This is a modified lab bundle, not an upstream THEOplayer release.
 
 THEOplayer uses its own media element and controls inside the shared console. Its events and public media properties drive status and metrics. Closing or switching engines pauses/destroys the player and resets the container. DRM remains disabled for all engines.
 
-**Validation limit:** No valid license was available during integration. Successful THEOplayer HLS/DASH playback requires testing with a valid domain license. Tests with a player double verify integration behavior, not licensed playback.
+**Validation:** Test mode is exercised against the real modified SDK with generated MPEG-TS HLS, fMP4 HLS and DASH fixtures, checking that the media playhead advances. Public samples were also probed; the external Angel One HLS sample intermittently stalled while fetching a video segment and switching ABR levels. Local fixtures keep that network timing out of the SDK test. Normal mode still verifies that invalid licenses are rejected. DRM and other optional SDK features have not been validated by these tests.
 
 Official references: [Web setup](https://optiview.dolby.com/docs/theoplayer/getting-started/sdks/web/), [Player API](https://optiview.dolby.com/docs/theoplayer/v11/api-reference/web/classes/Player.html).
 
@@ -78,7 +80,7 @@ npm test
 ```
 
 To use installed Google Chrome instead: `PLAYWRIGHT_CHANNEL=chrome npm test`.
-The suite starts its own local server. It checks the supplied real SDK's invalid-license path and repeat initialization, test-flag behavior, missing-SDK fallback, and a player double for HLS/DASH source mapping, events, metrics and cleanup on mobile. A network-dependent regression test verifies actual hls.js HLS and Shaka DASH playheads advance. Internet access to jsDelivr and sample streams is required.
+The suite starts its own local server. It checks the real SDK's normal invalid-license path, test-mode playback with synthetic HLS/DASH fixtures, repeat initialization, flag reset, missing-SDK fallback, and a player double for events, metrics and cleanup on mobile. A regression test verifies actual hls.js HLS and Shaka DASH playheads advance on public samples. Internet access to jsDelivr and those public samples is required. Fixture generation details are in `tests/fixtures/README.md`; FFmpeg is not required to run the checked-in fixtures.
 
 ## Deploy with GitHub Pages
 
@@ -96,7 +98,7 @@ On **all viewports**, choosing an enabled **hls.js**, **Shaka**, or **THEOplayer
 
 ## Static asset cache control on GitHub Pages
 
-This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.5`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-local-5`) or a hard refresh if the build marker is missing.
+This no-build site uses query-string release tokens on `styles.css` and `app.js` in `index.html` to avoid clients reusing stale assets after a deployment. **Increment both asset query tokens with each UI/JS/CSS release**. The footer shows the current build marker (`BUILD 2026.11.13.6`) to help distinguish a cached Pages document from the new site. The HTML document itself may still be cached temporarily: use a unique query string on the site URL (e.g. `/?v=20261113-theoplayer-sdk-test-6`) or a hard refresh if the build marker is missing.
 
 ## Compatibility and limitations
 

@@ -57,10 +57,10 @@
   ];
 
   const ENGINE_LABELS = { hls: "hls.js", shaka: "Shaka", theo: "THEOplayer" };
-  const THEO_LIBRARY = "https://cdn.jsdelivr.net/npm/theoplayer@11.8.0/";
+  const THEO_LIBRARY = new URL("./vendor/theoplayer/", document.baseURI).href;
   const THEO_TEST_MODE = new URLSearchParams(window.location.search).get("theoTest") === "1";
   const THEO_NO_LICENSE_STATUS = THEO_TEST_MODE
-    ? "Test mode: có thể thử SDK khi chưa nhập license; SDK vẫn xác thực license."
+    ? "Test mode: đã bỏ kiểm tra SDK license cho clear HLS/DASH trong bundle thử nghiệm."
     : "Chưa có license. THEOplayer tạm khóa.";
   const STORAGE_KEY = "playback-lab:custom-streams:v1";
   const byId = (id) => document.getElementById(id);
@@ -155,7 +155,7 @@
     if (engine === "theo") {
       if (!browserSupport().theo) return { ok: false, reason: "THEOplayer SDK không khả dụng; kiểm tra file THEOplayer.js." };
       if (!theoLicense && !THEO_TEST_MODE) return { ok: false, reason: "Nhập license trong Cấu hình THEOplayer để thử phát." };
-      return { ok: true, reason: "Thử THEOplayer; SDK sẽ kiểm tra license, codec và hỗ trợ browser khi tải." };
+      return { ok: true, reason: "Thử THEOplayer; kiểm tra codec / CORS và license (trừ test mode)." };
     }
     return { ok: false, reason: "Engine không xác định." };
   }
@@ -660,7 +660,7 @@
     theoLicense = byId("theo-license").value.trim();
     byId("theo-license").value = "";
     byId("theo-license-status").textContent = theoLicense
-      ? "Đã áp dụng trong phiên này. SDK sẽ xác thực license khi phát."
+      ? (THEO_TEST_MODE ? "Đã nhập license; test mode đang bỏ kiểm tra SDK license." : "Đã áp dụng trong phiên này. SDK sẽ xác thực license khi phát.")
       : THEO_NO_LICENSE_STATUS;
     renderCatalog();
   });
