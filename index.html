@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090e18">
   <meta name="description" content="Playback Lab — test HLS và MPEG-DASH bằng hls.js hoặc Shaka Player.">
   <title>Stream Library · Playback Lab</title>
@@ -66,8 +66,8 @@
         <div class="empty-state" id="empty-state" hidden><span>⌕</span><strong>Không tìm thấy luồng</strong><p>Hãy thử bộ lọc khác hoặc thêm URL của bạn.</p></div>
       </div>
 
-      <aside class="inspector" aria-label="Trình phát và diagnostics">
-        <div class="inspector-heading"><div><span class="section-index">02 / INSPECT</span><h2>Player console</h2></div><span class="console-index">LAB / 001</span></div>
+      <aside class="inspector" id="player-inspector" aria-label="Trình phát và diagnostics">
+        <div class="inspector-heading"><div><span class="section-index">02 / INSPECT</span><h2 id="player-dialog-title">Player console</h2></div><span class="console-index">LAB / 001</span><button class="player-close" id="close-player" type="button" aria-label="Đóng trình phát">×</button></div>
         <div class="player-card">
           <div class="player-topline"><span><span class="live-led"></span> LIVE PREVIEW</span><span id="engine-indicator">NO ENGINE</span></div>
           <div class="video-stage">

@@ -51,6 +51,12 @@ There is no build step, framework, backend, account, or API key required for the
 
 After merging the feature branch into `main`, open **Settings → Pages** for this repository and select **Deploy from a branch**, with `main` and `/(root)` as the publishing source. GitHub Pages can then serve the root `index.html`.
 
+## Mobile Safari player
+
+On screens up to 980 CSS pixels wide (including common iPhone portrait and landscape sizes), selecting an enabled **hls.js** or **Shaka** button opens the existing player console as a viewport modal rather than placing it beneath the catalog. The player video and close button are visible immediately; diagnostics scroll inside the modal. The page remains at its previous catalog scroll position when the modal is closed, and closing stops playback. On wider screens, the desktop sticky inspector layout remains unchanged.
+
+**Manual QA:** Open GitHub Pages on an iPhone in Safari. Scroll to any stream, tap an enabled playback engine and confirm the video is visible without scrolling the main page. Scroll the modal to inspect metrics/logs, close it, and verify the catalog returns to the same position. Repeat in landscape, with Safari's toolbar expanded/collapsed, then verify desktop playback is unaffected. A stream's actual playback still depends on browser engine support, CORS and codec support.
+
 ## Compatibility and limitations
 
 | Stream | hls.js | Shaka |
