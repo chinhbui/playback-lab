@@ -53,6 +53,35 @@ const fakeSDK = `window.testPlayers = []; window.THEOplayer = {Player: class {
   destroy() { this.destroyed=true; this.element.remove(); }
 }};`;
 
+test('THEOplayer action text stays inside stream cards at responsive widths', {timeout:60000}, async () => {
+  const page = await browser.newPage();
+  await page.route('**/vendor/theoplayer/THEOplayer.js*', route =>
+    route.fulfill({contentType:'text/javascript',body:fakeSDK}));
+  try {
+    await page.goto(base);
+    await page.waitForSelector('.engine-btn.theo');
+    for (const width of [320,390,768,1440]) {
+      await page.setViewportSize({width,height:900});
+      const layout = await page.locator('.engine-btn.theo').first().evaluate(button => {
+        const actions = button.closest('.card-actions');
+        return {columns:getComputedStyle(actions).gridTemplateColumns.trim().split(' ').length};
+      });
+      if (width === 320) assert.equal(layout.columns,2,'320px cards should use two button columns');
+      if (width === 390) assert.equal(layout.columns,3,'390px cards should retain three button columns');
+      const overflow = await page.locator('.engine-btn.theo').evaluateAll(buttons =>
+        buttons.flatMap(button => {
+          const bounds=button.getBoundingClientRect();
+          const card=button.closest('.stream-card').getBoundingClientRect();
+          const overflows=bounds.right>card.right+1 ||
+            button.scrollWidth>button.clientWidth+1 ||
+            button.scrollHeight>button.clientHeight+1;
+          return overflows ? [{text:button.textContent,width:bounds.width,scrollWidth:button.scrollWidth,clientWidth:button.clientWidth}] : [];
+        }));
+      assert.deepEqual(overflow,[], 'THEOplayer action should not overflow at viewport '+width);
+    }
+  } finally { await page.close(); }
+});
+
 test('real SDK: no license, invalid license, cleanup and reload', {timeout:60000}, async () => {
   const page = await browser.newPage(); const errors=[]; page.on('pageerror', e=>errors.push(e.message));
   try {
