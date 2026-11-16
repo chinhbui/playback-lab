@@ -85,7 +85,7 @@ a{color:inherit;text-decoration:none}
 .card-visual[data-format="dash"] .visual-glyph{color:#b6c6fc}
 .visual-mode{position:absolute;left:13px;top:12px;background:#07131dcc;border:1px solid #415467;padding:4px 8px;border-radius:5px;color:#d6e4ed;font:9px ui-monospace,monospace;letter-spacing:.06em}
 .visual-number{position:absolute;right:13px;top:12px;font:10px ui-monospace,monospace;color:#91afb6}
-.card-body{padding:15px 15px 16px}
+.card-body{padding:15px 15px 16px;container-type:inline-size}
 .card-title-line{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
 .card-title{margin:0;font-size:14px;line-height:1.4;font-weight:750;letter-spacing:-.015em;overflow-wrap:anywhere}
 .reference-link{flex-shrink:0;color:#8eb1bd;font:10px ui-monospace,monospace;white-space:nowrap;margin-top:3px}
@@ -101,7 +101,7 @@ a{color:inherit;text-decoration:none}
 .tag-live{border-color:#765338;color:#e9bd85;background:#362a24}
 .tag-neutral{color:#96aab7}
 .card-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
-.engine-btn{border:1px solid #345e57;background:#17372f;color:#bdf3d7;border-radius:7px;font-size:11px;font-weight:750;min-height:37px;padding:8px 5px;transition:background .15s,border-color .15s}
+.engine-btn{min-width:0;border:1px solid #345e57;background:#17372f;color:#bdf3d7;border-radius:7px;font-size:11px;font-weight:750;line-height:1.35;min-height:37px;padding:8px 5px;white-space:normal;overflow-wrap:anywhere;transition:background .15s,border-color .15s}
 .engine-btn:hover:not(:disabled){background:#215446;border-color:#5dbd94}
 .engine-btn.shaka{background:#1a2f46;border-color:#3d587a;color:#bbd6ff}
 .engine-btn.shaka:hover:not(:disabled){background:#253e60;border-color:#6e9ccc}
@@ -109,6 +109,11 @@ a{color:inherit;text-decoration:none}
 .engine-btn.is-active{outline:1px solid #9bf2c9;outline-offset:2px}
 .engine-btn.shaka.is-active{outline-color:#9bc4ff}
 .engine-btn small{font-weight:500;margin-left:4px;opacity:.75}
+/* Compact cards have room for two readable buttons, not three truncated labels. */
+@container (max-width:290px){
+  .card-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .engine-btn.theo{grid-column:1/-1}
+}
 .empty-state{border:1px dashed var(--line);text-align:center;border-radius:12px;padding:40px;color:var(--muted)}
 .empty-state span{display:block;font-size:36px}.empty-state strong{display:block;color:var(--text)}
 .inspector{display:none}
