@@ -64,7 +64,7 @@ test('THEOplayer action text stays inside stream cards at responsive widths', {t
       await page.setViewportSize({width,height:900});
       const layout = await page.locator('.engine-btn.theo').first().evaluate(button => {
         const actions = button.closest('.card-actions');
-        return {columns:getComputedStyle(actions).gridTemplateColumns.split(/\\s+/).length};
+        return {columns:getComputedStyle(actions).gridTemplateColumns.trim().split(' ').length};
       });
       if (width === 320) assert.equal(layout.columns,2,'320px cards should use two button columns');
       if (width === 390) assert.equal(layout.columns,3,'390px cards should retain three button columns');
